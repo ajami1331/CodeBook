@@ -10,9 +10,9 @@
         - n, number of sets
     Tested Problems:
       UVA:
-		10608 - Friends
-    	11503 - Virtual Friends
-    	10583 - Ubiquitous Religions
+        10608 - Friends
+        11503 - Virtual Friends
+        10583 - Ubiquitous Religions
 **/
 
 struct Disjoint_Set {
