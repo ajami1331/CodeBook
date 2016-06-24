@@ -8,7 +8,7 @@
     Input:
         - n, number of nodes
         - directed, true if the graph is directed
-        - graph, constructed using add_dge()
+        - graph, constructed using add_edge()
         - source, sink
     Output:
         - Maximum flow
