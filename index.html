@@ -1,0 +1,477 @@
+<!DOCTYPE html PUBLIC "-//IETF//DTD HTML 2.0//EN">
+<HTML>
+<HEAD>
+<TITLE>LU_SERIOUS ACM-ICPC Team Notebook</TITLE>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#1F00FF" ALINK="#FF0000" VLINK="#9900DD">
+<A NAME="top">
+<CENTER><H1><U>LU_SERIOUS ACM-ICPC Team Notebook</U></H1></CENTER>
+<H1>Table of Contents</H1>
+<H2>Combinatorial optimization</H2>
+
+<OL START=1>
+<LI><A HREF="#file1">Edmonds Karp Flow Algorithm</A></LI>
+</OL>
+<H2>Graph algorithms</H2>
+
+<OL START=2>
+<LI><A HREF="#file2">	Kruskal's algorithm</A></LI>
+</OL>
+<H2>Data Structures</H2>
+
+<OL START=3>
+<LI><A HREF="#file3">SQRT Decomposition Data Structure</A></LI>
+<LI><A HREF="#file4">Mo_s Algo</A></LI>
+<LI><A HREF="#file5">Disjoint_Set Union find</A></LI>
+</OL>
+<HR>
+<A NAME="file1">
+<H1>Edmonds_Karp.cpp 1/5</H1>
+[<A HREF="#top">top</A>][prev][<A HREF="#file2">next</A>]
+<PRE>
+<I><FONT COLOR="#B22222">/**
+    Implementation of Edmonds-Karp max flow algorithm
+    Running time:
+        O(|V|*|E|^2)
+    Usage:
+        - add edges by add_edge()
+        - call max_flow() to get maximum flow in the graph
+    Input:
+        - n, number of nodes
+        - directed, true if the graph is directed
+        - graph, constructed using add_edge()
+        - source, sink
+    Output:
+        - Maximum flow
+    Tested Problems:
+      CF:
+      	653D - Delivery Bears
+      UVA:
+        820 - Internet Bandwidth
+        10330 - Power Transmission
+**/</FONT></I>
+
+#<B><FONT COLOR="#5F9EA0">include</FONT></B> <B><FONT COLOR="#BC8F8F">&lt;bits/stdc++.h&gt;</FONT></B>
+using namespace std;
+
+<B><FONT COLOR="#228B22">const</FONT></B> <B><FONT COLOR="#228B22">int</FONT></B> INF = 1e9;
+
+<B><FONT COLOR="#228B22">struct</FONT></B> edmonds_karp {
+    <B><FONT COLOR="#228B22">int</FONT></B> n;
+    vector &lt; <B><FONT COLOR="#228B22">int</FONT></B> &gt; par;
+    vector &lt; <B><FONT COLOR="#228B22">bool</FONT></B> &gt; vis;
+    vector &lt; vector &lt; <B><FONT COLOR="#228B22">int</FONT></B> &gt; &gt; graph;
+
+    edmonds_karp () {}
+    edmonds_karp( <B><FONT COLOR="#228B22">int</FONT></B> _n ) : n( _n ), par( _n ), vis( _n ), graph( _n, vector&lt; <B><FONT COLOR="#228B22">int</FONT></B> &gt; ( _n, 0 ) ) {}
+    ~edmonds_karp() {}
+
+    <B><FONT COLOR="#228B22">void</FONT></B> add_edge( <B><FONT COLOR="#228B22">int</FONT></B> from, <B><FONT COLOR="#228B22">int</FONT></B> to, <B><FONT COLOR="#228B22">int</FONT></B> cap, <B><FONT COLOR="#228B22">bool</FONT></B> directed ) {
+        <B><FONT COLOR="#A020F0">this</FONT></B>-&gt;graph[ from ][ to ] += cap;
+        <B><FONT COLOR="#A020F0">this</FONT></B>-&gt;graph[ to ][ from ] = directed ? graph[ to ][ from ] + cap : graph[ to ][ from ] ;
+    }
+
+    <B><FONT COLOR="#228B22">bool</FONT></B> bfs( <B><FONT COLOR="#228B22">int</FONT></B> src, <B><FONT COLOR="#228B22">int</FONT></B> sink ) {
+        <B><FONT COLOR="#228B22">int</FONT></B> u;
+        fill( vis.begin(), vis.end(), false );
+        fill( par.begin(), par.end(), -1 );
+        vis[ src ] = true;
+        queue &lt; <B><FONT COLOR="#228B22">int</FONT></B> &gt; q;
+        q.push( src );
+        <B><FONT COLOR="#A020F0">while</FONT></B>( !q.empty() ) {
+            u = q.front();
+            q.pop();
+            <B><FONT COLOR="#A020F0">if</FONT></B>( u == sink ) <B><FONT COLOR="#A020F0">return</FONT></B> true;
+            <B><FONT COLOR="#A020F0">for</FONT></B>(<B><FONT COLOR="#228B22">int</FONT></B> i=0; i&lt;n; i++) {
+                <B><FONT COLOR="#A020F0">if</FONT></B>( graph[u][i] &gt; 0 and not vis[i] ) {
+                    q.push( i );
+                    vis[ i ] = true;
+                    par[ i ] = u;
+                }
+            }
+        }
+        <B><FONT COLOR="#A020F0">return</FONT></B> par[ sink ] != -1;
+    }
+
+    <B><FONT COLOR="#228B22">int</FONT></B> min_val( <B><FONT COLOR="#228B22">int</FONT></B> i ) {
+        <B><FONT COLOR="#228B22">int</FONT></B> ret = INF;
+        <B><FONT COLOR="#A020F0">for</FONT></B>( ; par[ i ] != -1; i = par[ i ] ) {
+            ret = min( ret, graph[ par[i] ][ i ] );
+        }
+        <B><FONT COLOR="#A020F0">return</FONT></B> ret;
+    }
+
+    <B><FONT COLOR="#228B22">void</FONT></B> augment_path( <B><FONT COLOR="#228B22">int</FONT></B> val, <B><FONT COLOR="#228B22">int</FONT></B> i ) {
+        <B><FONT COLOR="#A020F0">for</FONT></B>( ; par[ i ] != -1; i = par[ i ] ) {
+            graph[ par[i] ][ i ] -= val;
+            graph[ i ][ par[i] ] += val;
+        }
+    }
+
+    <B><FONT COLOR="#228B22">int</FONT></B> max_flow( <B><FONT COLOR="#228B22">int</FONT></B> src, <B><FONT COLOR="#228B22">int</FONT></B> sink ) {
+        <B><FONT COLOR="#228B22">int</FONT></B> min_cap, ret = 0;
+        <B><FONT COLOR="#A020F0">while</FONT></B>( bfs( src, sink ) ) {
+            augment_path( min_cap = min_val( sink ), sink );
+            ret += min_cap;
+        }
+        <B><FONT COLOR="#A020F0">return</FONT></B> ret;
+    }
+};
+</PRE>
+<HR>
+<A NAME="file2">
+<H1>Kruskal.cpp 2/5</H1>
+[<A HREF="#top">top</A>][<A HREF="#file1">prev</A>][<A HREF="#file3">next</A>]
+<PRE>
+<I><FONT COLOR="#B22222">/**
+    Implementation of Kruskal's minimum spanning tree algorithm
+    Running time:
+        O(|E|log|V|)
+    Usage:
+        - initialize by calling init()
+        - add edges by add_edge()
+        - call kruskal() to generate minimum spanning tree
+    Input:
+        - n, number of nodes, provided when init() is called
+        - graph, constructed using add_edge()
+    Output:
+        - weight of minimum spanning tree
+        - prints the mst
+    Tested Problems:
+        UVA:
+            1208 - Oreon
+*/</FONT></I>
+
+#<B><FONT COLOR="#5F9EA0">include</FONT></B> <B><FONT COLOR="#BC8F8F">&lt;bits/stdc++.h&gt;</FONT></B>
+using namespace std;
+
+<B><FONT COLOR="#228B22">struct</FONT></B> edge {
+    <B><FONT COLOR="#228B22">int</FONT></B> u, v, cost;
+    <B><FONT COLOR="#228B22">bool</FONT></B> <B><FONT COLOR="#A020F0">operator</FONT></B> &lt; (<B><FONT COLOR="#228B22">const</FONT></B> edge&amp; other) <B><FONT COLOR="#228B22">const</FONT></B>{
+        <B><FONT COLOR="#A020F0">if</FONT></B>( other.cost == <B><FONT COLOR="#A020F0">this</FONT></B>-&gt;cost ) {
+        <B><FONT COLOR="#A020F0">if</FONT></B>( other.u == <B><FONT COLOR="#A020F0">this</FONT></B>-&gt;u ) {
+            <B><FONT COLOR="#A020F0">return</FONT></B> other.v &gt; <B><FONT COLOR="#A020F0">this</FONT></B>-&gt;v;
+        } <B><FONT COLOR="#A020F0">else</FONT></B> {
+            <B><FONT COLOR="#A020F0">return</FONT></B> other.u &gt; <B><FONT COLOR="#A020F0">this</FONT></B>-&gt;u;
+        }
+        } <B><FONT COLOR="#A020F0">else</FONT></B> {
+            <B><FONT COLOR="#A020F0">return</FONT></B> other.cost &gt; <B><FONT COLOR="#A020F0">this</FONT></B>-&gt;cost;
+        }
+    }
+};
+
+vector&lt; edge &gt; edges;
+vector &lt; <B><FONT COLOR="#228B22">int</FONT></B> &gt; par, cnt, rank;
+<B><FONT COLOR="#228B22">int</FONT></B> N;
+
+<B><FONT COLOR="#228B22">void</FONT></B> <B><FONT COLOR="#0000FF">init</FONT></B>( <B><FONT COLOR="#228B22">int</FONT></B> n ) {
+    N = n;
+    par.resize( n );
+    cnt.resize( n );
+    rank.resize( n );
+}
+
+<B><FONT COLOR="#228B22">void</FONT></B> <B><FONT COLOR="#0000FF">add_edge</FONT></B>( <B><FONT COLOR="#228B22">int</FONT></B> u, <B><FONT COLOR="#228B22">int</FONT></B> v, <B><FONT COLOR="#228B22">int</FONT></B> c ) {
+    edges.push_back( { u, v, c } );
+}
+
+<B><FONT COLOR="#228B22">void</FONT></B> <B><FONT COLOR="#0000FF">make_set</FONT></B>() {
+    <B><FONT COLOR="#A020F0">for</FONT></B>(<B><FONT COLOR="#228B22">int</FONT></B> i=0; i&lt;N; i++) {
+        par[i] = i;
+        cnt[i] = 1;
+        rank[i] = 0;
+    }
+}
+
+<B><FONT COLOR="#228B22">int</FONT></B> <B><FONT COLOR="#0000FF">find_rep</FONT></B>( <B><FONT COLOR="#228B22">int</FONT></B> x ) {
+    <B><FONT COLOR="#A020F0">if</FONT></B>(x != par[ x ]) {
+        par[ x ] = find_rep( par[ x ] );
+    }
+    <B><FONT COLOR="#A020F0">return</FONT></B> par[ x ];
+}
+
+<B><FONT COLOR="#228B22">int</FONT></B> <B><FONT COLOR="#0000FF">kruskal</FONT></B>() {
+    <B><FONT COLOR="#228B22">int</FONT></B> ret = 0;
+    make_set();
+    sort( edges.begin(), edges.end() );
+    cout &lt;&lt; <B><FONT COLOR="#BC8F8F">&quot;Case &quot;</FONT></B> &lt;&lt; ++cs &lt;&lt; <B><FONT COLOR="#BC8F8F">&quot;:\n&quot;</FONT></B>;
+    <B><FONT COLOR="#A020F0">for</FONT></B>( edge e : edges ) {
+        <B><FONT COLOR="#228B22">int</FONT></B> u = e.u;
+        <B><FONT COLOR="#228B22">int</FONT></B> v = e.v;
+        <B><FONT COLOR="#A020F0">if</FONT></B>( ( u = find_rep( u ) ) != ( v = find_rep( v ) ) ) {
+            <B><FONT COLOR="#A020F0">if</FONT></B>( rank[ u ] &lt; rank[ v ] ) {
+                cnt[ v ] += cnt[ u ];
+                par[ u ] = par[ v ];
+            } <B><FONT COLOR="#A020F0">else</FONT></B> {
+                rank[ u ] = max( rank[ u ], rank[ v ] + 1 );
+                cnt[ u ] += cnt[ v ];
+                par[ v ] = par[ u ];
+            }
+            cout &lt;&lt; city[ e.u ] &lt;&lt; <B><FONT COLOR="#BC8F8F">&quot;-&quot;</FONT></B> &lt;&lt; city[ e.v ] &lt;&lt; <B><FONT COLOR="#BC8F8F">&quot; &quot;</FONT></B> &lt;&lt; e.cost &lt;&lt; <B><FONT COLOR="#BC8F8F">&quot;\n&quot;</FONT></B>;
+            ret += e.cost;
+        }
+    }
+    <B><FONT COLOR="#A020F0">return</FONT></B> ret;
+}
+
+
+</PRE>
+<HR>
+<A NAME="file3">
+<H1>SQRT_Decomposition.cpp 3/5</H1>
+[<A HREF="#top">top</A>][<A HREF="#file2">prev</A>][<A HREF="#file4">next</A>]
+<PRE>
+<I><FONT COLOR="#B22222">/**
+    Implementation of SQRT-Decomposition Data Structure
+    Running time:
+        O( ( n + q ) * sqrt( n ) * f() )
+    Usage:
+        - call int() to initialize the array
+        - call update() to update the element in a position
+        - call query() to get ans from segment [L...R]
+    Input:
+        - n, number of elements
+        - n elements
+        - q queries
+    Tested Problems:
+      lightOJ:
+        1082 - Array Queries
+**/</FONT></I>
+#<B><FONT COLOR="#5F9EA0">include</FONT></B> <B><FONT COLOR="#BC8F8F">&lt;bits/stdc++.h&gt;</FONT></B>
+using namespace std;
+
+<B><FONT COLOR="#228B22">const</FONT></B> <B><FONT COLOR="#228B22">int</FONT></B> mx = 1e5 + 1;
+<B><FONT COLOR="#228B22">const</FONT></B> <B><FONT COLOR="#228B22">int</FONT></B> sz = 1e3 + 1;
+<B><FONT COLOR="#228B22">const</FONT></B> <B><FONT COLOR="#228B22">int</FONT></B> inf = 1e9;
+<B><FONT COLOR="#228B22">int</FONT></B> BLOCK_SIZE;
+<B><FONT COLOR="#228B22">int</FONT></B> n, q, t, cs, x, y;
+<B><FONT COLOR="#228B22">int</FONT></B> BLOCKS[sz];
+<B><FONT COLOR="#228B22">int</FONT></B> ar[mx];
+
+<B><FONT COLOR="#228B22">int</FONT></B> <B><FONT COLOR="#0000FF">getID</FONT></B>( <B><FONT COLOR="#228B22">int</FONT></B> idx ) {
+    <B><FONT COLOR="#A020F0">return</FONT></B> idx / BLOCK_SIZE;
+}
+
+<B><FONT COLOR="#228B22">void</FONT></B> <B><FONT COLOR="#0000FF">init</FONT></B>() {
+    <B><FONT COLOR="#A020F0">for</FONT></B>( <B><FONT COLOR="#228B22">int</FONT></B> i=0; i&lt;sz; i++ ) BLOCKS[i] = inf;
+}
+
+<B><FONT COLOR="#228B22">void</FONT></B> <B><FONT COLOR="#0000FF">update</FONT></B>( <B><FONT COLOR="#228B22">int</FONT></B> idx, <B><FONT COLOR="#228B22">int</FONT></B> val ) {
+    <B><FONT COLOR="#228B22">int</FONT></B> id = getID( idx );
+    BLOCKS[id] = min( val, BLOCKS[id] );
+}
+
+<B><FONT COLOR="#228B22">int</FONT></B> <B><FONT COLOR="#0000FF">query</FONT></B>( <B><FONT COLOR="#228B22">int</FONT></B> l, <B><FONT COLOR="#228B22">int</FONT></B> r ) {
+    <B><FONT COLOR="#228B22">int</FONT></B> le = getID( l );
+    <B><FONT COLOR="#228B22">int</FONT></B> ri = getID( r );
+    <B><FONT COLOR="#228B22">int</FONT></B> ret = inf;
+
+    <B><FONT COLOR="#A020F0">if</FONT></B>( le == ri ) {
+        <B><FONT COLOR="#A020F0">for</FONT></B>( <B><FONT COLOR="#228B22">int</FONT></B> i=l; i&lt;=r; i++ ) {
+            ret = min( ret, ar[i] );
+        }
+        <B><FONT COLOR="#A020F0">return</FONT></B> ret;
+    }
+
+    <B><FONT COLOR="#A020F0">for</FONT></B>( <B><FONT COLOR="#228B22">int</FONT></B> i=l; i&lt;(le+1)*BLOCK_SIZE; i++ ) ret = min( ret, ar[i] );
+    <B><FONT COLOR="#A020F0">for</FONT></B>( <B><FONT COLOR="#228B22">int</FONT></B> i=le+1; i&lt;ri; i++ ) ret = min( ret, BLOCKS[i] );
+    <B><FONT COLOR="#A020F0">for</FONT></B>( <B><FONT COLOR="#228B22">int</FONT></B> i=ri*BLOCK_SIZE; i&lt;=r; i++ ) ret = min( ret, ar[i] );
+
+    <B><FONT COLOR="#A020F0">return</FONT></B> ret;
+}
+
+<B><FONT COLOR="#228B22">int</FONT></B> <B><FONT COLOR="#0000FF">main</FONT></B>() {
+    #ifdef LU_SERIOUS
+        freopen( <B><FONT COLOR="#BC8F8F">&quot;in.txt&quot;</FONT></B>, <B><FONT COLOR="#BC8F8F">&quot;r&quot;</FONT></B>, stdin );
+<I><FONT COLOR="#B22222">//        freopen( &quot;out.txt&quot;, &quot;w+&quot;, stdout );
+</FONT></I>    #endif <I><FONT COLOR="#B22222">// LU_SERIOUS
+</FONT></I>    scanf( <B><FONT COLOR="#BC8F8F">&quot;%d&quot;</FONT></B>, &amp;t );
+    <B><FONT COLOR="#A020F0">for</FONT></B>( cs=1; cs&lt;=t; cs++ ) {
+        scanf( <B><FONT COLOR="#BC8F8F">&quot;%d %d&quot;</FONT></B>, &amp;n, &amp;q );
+        BLOCK_SIZE = sqrt( n );
+        init();
+        <B><FONT COLOR="#A020F0">for</FONT></B>( <B><FONT COLOR="#228B22">int</FONT></B> i=0; i&lt;n; i++ ) {
+            scanf( <B><FONT COLOR="#BC8F8F">&quot;%d&quot;</FONT></B>, &amp;ar[i] );
+            update( i, ar[i] );
+        }
+        printf( <B><FONT COLOR="#BC8F8F">&quot;Case %d:\n&quot;</FONT></B>, cs );
+        <B><FONT COLOR="#A020F0">for</FONT></B>( <B><FONT COLOR="#228B22">int</FONT></B> i=0; i&lt;q; i++ ) {
+            scanf( <B><FONT COLOR="#BC8F8F">&quot;%d %d&quot;</FONT></B>, &amp;x, &amp;y );
+            printf( <B><FONT COLOR="#BC8F8F">&quot;%d\n&quot;</FONT></B>, query( x-1, y-1 ) );
+        }
+    }
+    <B><FONT COLOR="#A020F0">return</FONT></B> 0;
+}
+</PRE>
+<HR>
+<A NAME="file4">
+<H1>Mo's_Algo.cpp 4/5</H1>
+[<A HREF="#top">top</A>][<A HREF="#file3">prev</A>][<A HREF="#file5">next</A>]
+<PRE>
+<I><FONT COLOR="#B22222">/**
+    Implementation of Mo's Algo with SQRT-Decomposition Data Structure
+    Running time:
+        O( ( n + q ) * sqrt( n ) * f() )
+    Mo's Algo is a algorithm to process queries offline
+    For it to work, this condition must be satisified:
+        1) There can be no updates in the array
+        2) All queries must be known beforehand
+    Tested Problems:
+      CF:
+        220B - Little Elephant and Array
+**/</FONT></I>
+#<B><FONT COLOR="#5F9EA0">include</FONT></B> <B><FONT COLOR="#BC8F8F">&lt;bits/stdc++.h&gt;</FONT></B>
+using namespace std;
+
+using piii = pair &lt; pair &lt; <B><FONT COLOR="#228B22">int</FONT></B>, <B><FONT COLOR="#228B22">int</FONT></B> &gt;, <B><FONT COLOR="#228B22">int</FONT></B> &gt;;
+<B><FONT COLOR="#228B22">const</FONT></B> <B><FONT COLOR="#228B22">int</FONT></B> mx = 1e5 + 1;
+<B><FONT COLOR="#228B22">int</FONT></B> BLOCK_SIZE;
+<B><FONT COLOR="#228B22">int</FONT></B> n, m;
+<B><FONT COLOR="#228B22">int</FONT></B> calc;
+<B><FONT COLOR="#228B22">int</FONT></B> ar[mx];
+<B><FONT COLOR="#228B22">int</FONT></B> ans[mx];
+unordered_map &lt; <B><FONT COLOR="#228B22">int</FONT></B>, <B><FONT COLOR="#228B22">int</FONT></B> &gt; cnt;
+piii query[mx];
+
+<B><FONT COLOR="#228B22">struct</FONT></B> {
+    <B><FONT COLOR="#228B22">bool</FONT></B> <B><FONT COLOR="#A020F0">operator</FONT></B>()( <B><FONT COLOR="#228B22">const</FONT></B> piii &amp;a, <B><FONT COLOR="#228B22">const</FONT></B> piii &amp;b ) {
+        <B><FONT COLOR="#228B22">int</FONT></B> block_a = a.first.first / BLOCK_SIZE;
+        <B><FONT COLOR="#228B22">int</FONT></B> block_b = b.first.first / BLOCK_SIZE;
+        <B><FONT COLOR="#A020F0">if</FONT></B>( block_a != block_b ) {
+            <B><FONT COLOR="#A020F0">return</FONT></B> block_a &lt; block_b;
+        }
+        <B><FONT COLOR="#A020F0">return</FONT></B> a.first.second &lt; b.first.second;
+    }
+} cmp;
+
+<B><FONT COLOR="#228B22">void</FONT></B> <B><FONT COLOR="#0000FF">add</FONT></B>( <B><FONT COLOR="#228B22">int</FONT></B> x ) {
+    calc -= ( cnt[x] == x ? 1 : 0 );
+    cnt[x]++;
+    calc += ( cnt[x] == x ? 1 : 0 );
+}
+
+<B><FONT COLOR="#228B22">void</FONT></B> <B><FONT COLOR="#0000FF">remove</FONT></B>( <B><FONT COLOR="#228B22">int</FONT></B> x ) {
+    calc -= ( cnt[x] == x ? 1 : 0 );
+    cnt[x]--;
+    calc += ( cnt[x] == x ? 1 : 0 );
+}
+
+<B><FONT COLOR="#228B22">int</FONT></B> <B><FONT COLOR="#0000FF">main</FONT></B>() {
+    #ifdef LU_SERIOUS
+        freopen( <B><FONT COLOR="#BC8F8F">&quot;in.txt&quot;</FONT></B>, <B><FONT COLOR="#BC8F8F">&quot;r&quot;</FONT></B>, stdin );
+<I><FONT COLOR="#B22222">//        freopen( &quot;out.txt&quot;, &quot;w+&quot;, stdout );
+</FONT></I>    #endif <I><FONT COLOR="#B22222">// LU_SERIOUS
+</FONT></I>    <B><FONT COLOR="#A020F0">while</FONT></B>( ~scanf( <B><FONT COLOR="#BC8F8F">&quot;%d %d&quot;</FONT></B>, &amp;n, &amp;m ) ) {
+
+        BLOCK_SIZE = sqrt( n );
+        cnt.clear();
+        calc = 0;
+
+        <B><FONT COLOR="#A020F0">for</FONT></B>( <B><FONT COLOR="#228B22">int</FONT></B> i=0; i&lt;n; i++ ) scanf( <B><FONT COLOR="#BC8F8F">&quot;%d&quot;</FONT></B>, ar+i );
+
+        <B><FONT COLOR="#A020F0">for</FONT></B>( <B><FONT COLOR="#228B22">int</FONT></B> i=0; i&lt;m; i++ ) {
+            scanf( <B><FONT COLOR="#BC8F8F">&quot;%d %d&quot;</FONT></B>, &amp;query[i].first.first, &amp;query[i].first.second );
+            query[i].second = i;
+        }
+
+        sort( query, query+m, cmp );
+
+        <B><FONT COLOR="#228B22">int</FONT></B> mo_l = 0, mo_r = -1;
+
+        <B><FONT COLOR="#A020F0">for</FONT></B>( <B><FONT COLOR="#228B22">int</FONT></B> i=0; i&lt;m; i++ ) {
+            <B><FONT COLOR="#228B22">int</FONT></B> left = query[i].first.first - 1;
+            <B><FONT COLOR="#228B22">int</FONT></B> right = query[i].first.second - 1;
+
+            <B><FONT COLOR="#A020F0">while</FONT></B>( mo_r &lt; right ) {
+                mo_r++;
+                add( ar[mo_r] );
+            }
+
+            <B><FONT COLOR="#A020F0">while</FONT></B>( mo_r &gt; right ) {
+                remove( ar[mo_r] );
+                mo_r--;
+            }
+
+            <B><FONT COLOR="#A020F0">while</FONT></B>( mo_l &lt; left ) {
+                remove( ar[mo_l] );
+                mo_l++;
+            }
+
+            <B><FONT COLOR="#A020F0">while</FONT></B>( mo_l &gt; left ) {
+                mo_l--;
+                add( ar[mo_l] );
+            }
+
+            ans[ query[i].second ] = calc;
+        }
+
+        <B><FONT COLOR="#A020F0">for</FONT></B>( <B><FONT COLOR="#228B22">int</FONT></B> i=0; i&lt;m; i++ ) {
+            printf( <B><FONT COLOR="#BC8F8F">&quot;%d\n&quot;</FONT></B>, ans[i] );
+        }
+    }
+    <B><FONT COLOR="#A020F0">return</FONT></B> 0;
+}
+</PRE>
+<HR>
+<A NAME="file5">
+<H1>Disjoint_Set.cpp 5/5</H1>
+[<A HREF="#top">top</A>][<A HREF="#file4">prev</A>][next]
+<PRE>
+<I><FONT COLOR="#B22222">/**
+    Implementation of Disjoint-Set Union Data Structure
+    Running time:
+        O(nlog(n))
+    Usage:
+        - call make_set() to reset the set
+        - call find_rep() to get the set of the vertex
+        - call union_() to merge to sets
+    Input:
+        - n, number of sets
+    Tested Problems:
+      UVA:
+		10608 - Friends
+    	11503 - Virtual Friends
+    	10583 - Ubiquitous Religions
+**/</FONT></I>
+
+<B><FONT COLOR="#228B22">struct</FONT></B> Disjoint_Set {
+    <B><FONT COLOR="#228B22">int</FONT></B> n;
+    vector &lt; <B><FONT COLOR="#228B22">int</FONT></B> &gt; par, cnt, rank;
+
+    Disjoint_Set( <B><FONT COLOR="#228B22">int</FONT></B> n ) : n(n), rank(n), par(n), cnt(n) {}
+
+    <B><FONT COLOR="#228B22">void</FONT></B> make_set() {
+        <B><FONT COLOR="#A020F0">for</FONT></B>(<B><FONT COLOR="#228B22">int</FONT></B> i=0; i&lt;n; i++) {
+            par[i] = i;
+            cnt[i] = 1;
+            rank[i] = 0;
+        }
+    }
+
+    <B><FONT COLOR="#228B22">int</FONT></B> find_rep( <B><FONT COLOR="#228B22">int</FONT></B> x ) {
+        <B><FONT COLOR="#A020F0">if</FONT></B>(x != par[ x ]) {
+            par[ x ] = find_rep( par[ x ] );
+        }
+        <B><FONT COLOR="#A020F0">return</FONT></B> par[ x ];
+    }
+
+    <B><FONT COLOR="#228B22">int</FONT></B> union_( <B><FONT COLOR="#228B22">int</FONT></B> u, <B><FONT COLOR="#228B22">int</FONT></B> v ) {
+        <B><FONT COLOR="#A020F0">if</FONT></B>( ( u = find_rep( u ) ) != ( v = find_rep( v ) ) ) {
+            <B><FONT COLOR="#A020F0">if</FONT></B>( rank[ u ] &lt; rank[ v ] ) {
+                cnt[ v ] += cnt[ u ];
+                par[ u ] = par[ v ];
+                <B><FONT COLOR="#A020F0">return</FONT></B> cnt[v];
+            } <B><FONT COLOR="#A020F0">else</FONT></B> {
+                rank[ u ] = max( rank[ u ], rank[ v ] + 1 );
+                cnt[ u ] += cnt[ v ];
+                par[ v ] = par[ u ];
+            }
+        }
+        <B><FONT COLOR="#A020F0">return</FONT></B> cnt[u];
+    }
+};
+</PRE>
+<HR>
+<ADDRESS>Generated by <A HREF="http://www.iki.fi/~mtr/genscript/">GNU enscript 1.6.3</A>.</ADDRESS>
+</BODY>
+</HTML>
