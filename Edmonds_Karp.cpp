@@ -16,8 +16,8 @@
       CF:
       	653D - Delivery Bears
       UVA:
-    	820 - Internet Bandwidth
-		10330 - Power Transmission
+        820 - Internet Bandwidth
+        10330 - Power Transmission
 **/
 
 #include <bits/stdc++.h>
