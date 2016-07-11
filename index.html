@@ -11,18 +11,19 @@
 
 <OL START=1>
 <LI><A HREF="#file1">Edmonds Karp Max Flow Algorithm</A></LI>
-<LI><A HREF="#file2">	Kruskal's algorithm</A></LI>
+<LI><A HREF="#file2">Floyd Warshall All Pair Shortest Path Algorithm</A></LI>
+<LI><A HREF="#file3">	Kruskal's algorithm</A></LI>
 </OL>
 <H2>Data Structures</H2>
 
-<OL START=3>
-<LI><A HREF="#file3">SQRT Decomposition Data Structure</A></LI>
-<LI><A HREF="#file4">Mo's Algo</A></LI>
-<LI><A HREF="#file5">Disjoint_Set Union find</A></LI>
+<OL START=4>
+<LI><A HREF="#file4">SQRT Decomposition Data Structure</A></LI>
+<LI><A HREF="#file5">Mo's Algo</A></LI>
+<LI><A HREF="#file6">Disjoint_Set Union find</A></LI>
 </OL>
 <HR>
 <A NAME="file1">
-<H1>Edmonds_Karp.cpp 1/5</H1>
+<H1>Edmonds_Karp.cpp 1/6</H1>
 [<A HREF="#top">top</A>][prev][<A HREF="#file2">next</A>]
 <PRE>
 <I><FONT COLOR="#B22222">/**
@@ -116,8 +117,111 @@ using namespace std;
 </PRE>
 <HR>
 <A NAME="file2">
-<H1>Kruskal.cpp 2/5</H1>
+<H1>Floyed_Warshall.cpp 2/6</H1>
 [<A HREF="#top">top</A>][<A HREF="#file1">prev</A>][<A HREF="#file3">next</A>]
+<PRE>
+<I><FONT COLOR="#B22222">/**
+    Implementation of Floyd Warshall Alogrithm
+    Running time:
+        O( |v| ^ 3 )
+    Input:
+        - n, number vertex
+        - graph, inputed as an adjacency matrix
+    Tested Problems:
+      UVA:
+        544 - Heavy Cargo - MaxiMin path
+        567 - Risk - APSP
+**/</FONT></I>
+
+using vi = vector &lt; <B><FONT COLOR="#228B22">int</FONT></B> &gt;;
+using vvi = vector &lt; vi &gt;;
+
+<I><FONT COLOR="#B22222">/// mat[i][i] = 0, mat[i][j] = distance from i to j, path[i][j] = i
+</FONT></I><B><FONT COLOR="#228B22">void</FONT></B> <B><FONT COLOR="#0000FF">APSP</FONT></B>( vvi &amp;mat, vvi &amp;path ) {
+
+    <B><FONT COLOR="#228B22">int</FONT></B> V = mat.size();
+    <B><FONT COLOR="#A020F0">for</FONT></B>( <B><FONT COLOR="#228B22">int</FONT></B> via=0; via; via&lt;V; i++ ) {
+
+        <B><FONT COLOR="#A020F0">for</FONT></B>( <B><FONT COLOR="#228B22">int</FONT></B> from=0; from&lt;V; from++ ) {
+
+            <B><FONT COLOR="#A020F0">for</FONT></B>( <B><FONT COLOR="#228B22">int</FONT></B> to=0; to&lt;V; to++ ) {
+
+                <B><FONT COLOR="#A020F0">if</FONT></B>( mat[ from ][ via ] + mat[ via ][ to ] &lt; mat[ from ][ to ] ) {
+                    mat[ from ][ to ] = mat[ from ][ via ] + mat[ via ][ to ];
+                    path[ from ][ to ] = path[ via ][ to ];
+                }
+            }
+        }
+    }
+}
+
+<I><FONT COLOR="#B22222">/// prints the path from i to j
+</FONT></I><B><FONT COLOR="#228B22">void</FONT></B> <B><FONT COLOR="#0000FF">print</FONT></B>( <B><FONT COLOR="#228B22">int</FONT></B> i, <B><FONT COLOR="#228B22">int</FONT></B> j ) {
+    <B><FONT COLOR="#A020F0">if</FONT></B>( i != j ) {
+        print( i, path[i][j] );
+    }
+    cout &lt;&lt; j &lt;&lt; <B><FONT COLOR="#BC8F8F">&quot;\n&quot;</FONT></B>;
+}
+
+<I><FONT COLOR="#B22222">/// check if negative cycle exists
+</FONT></I><B><FONT COLOR="#228B22">bool</FONT></B> <B><FONT COLOR="#0000FF">negative_cycle</FONT></B>( vvi &amp;mat ) {
+    APSP( mat );
+    <B><FONT COLOR="#A020F0">return</FONT></B> mat[0][0] &lt; 0;
+}
+
+<B><FONT COLOR="#228B22">void</FONT></B> <B><FONT COLOR="#0000FF">transtitive_closure</FONT></B>( vvi &amp;mat ) {
+
+    <B><FONT COLOR="#228B22">int</FONT></B> V = mat.size();
+    <B><FONT COLOR="#A020F0">for</FONT></B>( <B><FONT COLOR="#228B22">int</FONT></B> via=0; via; via&lt;V; i++ ) {
+
+        <B><FONT COLOR="#A020F0">for</FONT></B>( <B><FONT COLOR="#228B22">int</FONT></B> from=0; from&lt;V; from++ ) {
+
+            <B><FONT COLOR="#A020F0">for</FONT></B>( <B><FONT COLOR="#228B22">int</FONT></B> to=0; to&lt;V; to++ ) {
+
+                mat[ from ][ to ] |= ( mat[ from ][ via ] &amp; mat[ via ][ to ] );
+            }
+        }
+    }
+}
+
+<I><FONT COLOR="#B22222">/// finding a path between two nodes that maximizes the minimum cost
+</FONT></I><B><FONT COLOR="#228B22">void</FONT></B> <B><FONT COLOR="#0000FF">mini_max</FONT></B>( vvi &amp;mat ) {
+
+    <B><FONT COLOR="#228B22">int</FONT></B> V = mat.size();
+    <B><FONT COLOR="#A020F0">for</FONT></B>( <B><FONT COLOR="#228B22">int</FONT></B> via=0; via; via&lt;V; i++ ) {
+
+        <B><FONT COLOR="#A020F0">for</FONT></B>( <B><FONT COLOR="#228B22">int</FONT></B> from=0; from&lt;V; from++ ) {
+
+            <B><FONT COLOR="#A020F0">for</FONT></B>( <B><FONT COLOR="#228B22">int</FONT></B> to=0; to&lt;V; to++ ) {
+
+                mat[ from ][ to ] = min( mat[ from ][ to ], max( mat[ from ][ via ], mat[ via ][ to ] ) );
+            }
+        }
+    }
+}
+
+<I><FONT COLOR="#B22222">/// finding a path between two nodes that minimizes the maximum cost
+</FONT></I><I><FONT COLOR="#B22222">/// eg: max load a truck can carry from one node to another node where
+</FONT></I><I><FONT COLOR="#B22222">/// the paths have weight limit
+</FONT></I><B><FONT COLOR="#228B22">void</FONT></B> <B><FONT COLOR="#0000FF">maxi_min</FONT></B>( vvi &amp;mat ) {
+
+    <B><FONT COLOR="#228B22">int</FONT></B> V = mat.size();
+    <B><FONT COLOR="#A020F0">for</FONT></B>( <B><FONT COLOR="#228B22">int</FONT></B> via=0; via; via&lt;V; i++ ) {
+
+        <B><FONT COLOR="#A020F0">for</FONT></B>( <B><FONT COLOR="#228B22">int</FONT></B> from=0; from&lt;V; from++ ) {
+
+            <B><FONT COLOR="#A020F0">for</FONT></B>( <B><FONT COLOR="#228B22">int</FONT></B> to=0; to&lt;V; to++ ) {
+
+                mat[ from ][ to ] = max( mat[ from ][ to ], min( mat[ from ][ via ], mat[ via ][ to ] ) );
+            }
+        }
+    }
+}
+</PRE>
+<HR>
+<A NAME="file3">
+<H1>Kruskal.cpp 3/6</H1>
+[<A HREF="#top">top</A>][<A HREF="#file2">prev</A>][<A HREF="#file4">next</A>]
 <PRE>
 <I><FONT COLOR="#B22222">/**
     Implementation of Kruskal's minimum spanning tree algorithm
@@ -213,9 +317,9 @@ vector &lt; <B><FONT COLOR="#228B22">int</FONT></B> &gt; par, cnt, rank;
 
 </PRE>
 <HR>
-<A NAME="file3">
-<H1>SQRT_Decomposition.cpp 3/5</H1>
-[<A HREF="#top">top</A>][<A HREF="#file2">prev</A>][<A HREF="#file4">next</A>]
+<A NAME="file4">
+<H1>SQRT_Decomposition.cpp 4/6</H1>
+[<A HREF="#top">top</A>][<A HREF="#file3">prev</A>][<A HREF="#file5">next</A>]
 <PRE>
 <I><FONT COLOR="#B22222">/**
     Implementation of SQRT-Decomposition Data Structure
@@ -300,9 +404,9 @@ using namespace std;
 }
 </PRE>
 <HR>
-<A NAME="file4">
-<H1>Mo's_Algo.cpp 4/5</H1>
-[<A HREF="#top">top</A>][<A HREF="#file3">prev</A>][<A HREF="#file5">next</A>]
+<A NAME="file5">
+<H1>Mo's_Algo.cpp 5/6</H1>
+[<A HREF="#top">top</A>][<A HREF="#file4">prev</A>][<A HREF="#file6">next</A>]
 <PRE>
 <I><FONT COLOR="#B22222">/**
     Implementation of Mo's Algo with SQRT-Decomposition Data Structure
@@ -409,9 +513,9 @@ piii query[mx];
 }
 </PRE>
 <HR>
-<A NAME="file5">
-<H1>Disjoint_Set.cpp 5/5</H1>
-[<A HREF="#top">top</A>][<A HREF="#file4">prev</A>][next]
+<A NAME="file6">
+<H1>Disjoint_Set.cpp 6/6</H1>
+[<A HREF="#top">top</A>][<A HREF="#file5">prev</A>][next]
 <PRE>
 <I><FONT COLOR="#B22222">/**
     Implementation of Disjoint-Set Union Data Structure
