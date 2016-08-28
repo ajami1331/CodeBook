@@ -18,7 +18,7 @@ using vvi = vector < vi >;
 void APSP( vvi &mat, vvi &path ) {
 
     int V = mat.size();
-    for( int via=0; via; via<V; i++ ) {
+    for( int via=0; via; via<V; via++ ) {
 
         for( int from=0; from<V; from++ ) {
 
@@ -50,7 +50,7 @@ bool negative_cycle( vvi &mat ) {
 void transtitive_closure( vvi &mat ) {
 
     int V = mat.size();
-    for( int via=0; via; via<V; i++ ) {
+    for( int via=0; via; via<V; via++ ) {
 
         for( int from=0; from<V; from++ ) {
 
@@ -66,7 +66,7 @@ void transtitive_closure( vvi &mat ) {
 void mini_max( vvi &mat ) {
 
     int V = mat.size();
-    for( int via=0; via; via<V; i++ ) {
+    for( int via=0; via; via<V; via++ ) {
 
         for( int from=0; from<V; from++ ) {
 
@@ -84,7 +84,7 @@ void mini_max( vvi &mat ) {
 void maxi_min( vvi &mat ) {
 
     int V = mat.size();
-    for( int via=0; via; via<V; i++ ) {
+    for( int via=0; via; via<V; via++ ) {
 
         for( int from=0; from<V; from++ ) {
 
