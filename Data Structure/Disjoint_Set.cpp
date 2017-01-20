@@ -17,15 +17,15 @@
 
 struct Disjoint_Set {
     int n;
-    vector < int > par, cnt, rank;
+    vector < int > par, cnt, rnk;
 
-    Disjoint_Set( int n ) : n(n), rank(n), par(n), cnt(n) {}
+    Disjoint_Set( int n ) : n(n), rnk(n), par(n), cnt(n) {}
 
     void make_set() {
         for(int i=0; i<n; i++) {
             par[i] = i;
             cnt[i] = 1;
-            rank[i] = 0;
+            rnk[i] = 0;
         }
     }
 
@@ -38,16 +38,16 @@ struct Disjoint_Set {
 
     int union_( int u, int v ) {
         if( ( u = find_rep( u ) ) != ( v = find_rep( v ) ) ) {
-            if( rank[ u ] < rank[ v ] ) {
+            if( rnk[ u ] < rnk[ v ] ) {
                 cnt[ v ] += cnt[ u ];
                 par[ u ] = par[ v ];
                 return cnt[v];
             } else {
-                rank[ u ] = max( rank[ u ], rank[ v ] + 1 );
+                rnk[ u ] = max( rnk[ u ], rnk[ v ] + 1 );
                 cnt[ u ] += cnt[ v ];
                 par[ v ] = par[ u ];
             }
         }
         return cnt[u];
     }
-};
+} DS( sz );
