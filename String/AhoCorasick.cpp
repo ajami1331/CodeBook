@@ -1,7 +1,7 @@
-
 const int sz = 1e6 + 10;
 const int MAX = 150 * 70 + 100;
-char inp[sz], s[105][75];
+char inp[sz], s[155][75];
+int cnt[155];
 
 struct AhoCorasick {
     vector < int > mark[MAX + 7];
@@ -27,9 +27,9 @@ struct AhoCorasick {
         for( int i=0; s[i]; i++ ) {
             id = value( s[i] );
             if( trie[ root ][ id ] == -1 ) {
-                mark[state + 1].clear();
-                fill( trie[state + 1], trie[state + 1] + 26, - 1 );
                 trie[ root ][ id ] = ++state;
+                mark[state].clear();
+                fill( trie[state], trie[state + 1] + 26, - 1 );
             }
             root = trie[ root ][ id ];
         }
@@ -60,8 +60,6 @@ struct AhoCorasick {
         }
     }
 } automata;
-
-int cnt[155];
 
 void countFreq() {
     for( int i=0,root=0,id; inp[i]; i++ ) {
