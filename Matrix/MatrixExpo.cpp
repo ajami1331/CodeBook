@@ -11,8 +11,7 @@
         10518 - How Many Calls?
         12470 - Tribonacci
 **/
-const int mat_sz = 2;
-struct Matrix {
+template <int mat_sz> struct Matrix {
     int a[mat_sz][mat_sz];
     void clear() {
         memset(a, 0, sizeof(a));
