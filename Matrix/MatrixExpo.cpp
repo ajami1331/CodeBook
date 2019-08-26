@@ -11,10 +11,17 @@
         10518 - How Many Calls?
         12470 - Tribonacci
 **/
-template <int mat_sz> struct Matrix {
-    int a[mat_sz][mat_sz];
+struct Matrix {
+    int mat_sz;
+    vector < vector < int > > a;
+    Matrix(int _mat_sz) :
+        mat_sz(_mat_sz),
+        a(vector < vector < int > > (_mat_sz, vector < int > (_mat_sz, 0)))
+    {}
     void clear() {
-        memset(a, 0, sizeof(a));
+        for (int i = 0; i < mat_sz; i++) {
+            fill(a[i].begin(), a[i].end(), 0);
+        }
     }
     void one() {
         for( int i=0; i<mat_sz; i++ ) {
@@ -24,7 +31,7 @@ template <int mat_sz> struct Matrix {
         }
     }
     Matrix operator + (const Matrix &b) const {
-        Matrix tmp;
+        Matrix tmp(mat_sz);
         tmp.clear();
         for (int i = 0; i <  mat_sz; i++) {
             for (int j = 0; j < mat_sz; j++) {
@@ -37,7 +44,7 @@ template <int mat_sz> struct Matrix {
         return tmp;
     }
     Matrix operator * (const Matrix &b) const {
-        Matrix tmp;
+        Matrix tmp(mat_sz);
         tmp.clear();
         for (int i = 0; i < mat_sz; i++) {
             for (int j = 0; j < mat_sz; j++) {
@@ -51,8 +58,8 @@ template <int mat_sz> struct Matrix {
         }
         return tmp;
     }
-    Matrix pw(int x) {
-        Matrix ans, num = *this;
+    Matrix pw(ll x) {
+        Matrix ans(mat_sz), num = *this;
         ans.one();
         while (x > 0) {
             if (x & 1) {
