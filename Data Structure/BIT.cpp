@@ -67,3 +67,41 @@ struct BIT {
     }
 }
 
+
+template <class T>
+class FenwickTree {
+private:
+    T tr[sz];
+    int LOGN = floor(log2(sz));
+public:
+    FenwickTree() {
+        memset(tr, 0, sizeof tr);
+    }
+    void Update(int x, T v) {
+        for (; x < sz; x += (x & -x)) {
+            tr[x] += v;
+        }
+    }
+    T Query(int x) {
+        T ret = 0;
+        for (; x > 0; x -= (x & -x)) {
+            ret += tr[x];
+        }
+        return ret;
+    }
+    T QueryRange(int l, int r) {
+        return Query(r) - Query(l - 1);
+    }
+    int BinarySearch(int v) {
+        int sum = 0;
+        int pos = 0;
+        
+        for (int i = LOGN; i >= 0; i--) {
+            if (pos + (1 << i) < sz && sum + tr[pos + (1 << i)] < v) {
+                sum += tr[pos + (1 << i)];
+                pos += (1 << i);
+            }
+        }
+        return pos + 1;
+    }
+};
