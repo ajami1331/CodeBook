@@ -29,10 +29,10 @@ void ap_dfs(int u) {
         v = G[u][i];
         if( v == par[u] ) continue;
         if( !vis[v] ) {
-            par[u] = v;
+            par[v] = u;
             ap_dfs( v );
             low[u] = min( low[u], low[v] );
-            /// d[u] < low[v] if bridge is needed
+            /// if( d[u] < low[v] ) { // if bridge is needed
             if( d[u] <= low[v] && u != root ) {
                 ap[u] = 1;
             }
@@ -40,6 +40,7 @@ void ap_dfs(int u) {
         } else {
             low[u] = min( low[u], d[v] );
         }
+	/// comment out if bridge is needed.
         if( u == root && cnt > 1 ) ap[u] = 1;
     }
 }
